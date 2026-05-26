@@ -1,0 +1,179 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  username     String   @unique
+  passwordHash String?
+  avatarUrl    String?
+  role         Role     @default(USER)
+  createdAt    DateTime @default(now())
+
+  votes        Vote[]
+  chatMessages ChatMessage[]
+  comments     Comment[]
+}
+
+enum Role {
+  USER
+  MODERATOR
+  ADMIN
+}
+
+model Song {
+  id          String   @id @default(cuid())
+  title       String
+  artist      String
+  anime       String
+  genre       String
+  coverUrl    String?
+  audioUrl    String?
+  externalId  String?
+  duration    Int
+  playCount   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  votes       Vote[]
+  queueItems  QueueItem[]
+  playHistory PlayHistory[]
+}
+
+model Vote {
+  id        String   @id @default(cuid())
+  userId    String
+  songId    String
+  cycleId   String?
+  sessionId String?
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id])
+  song      Song     @relation(fields: [songId], references: [id])
+
+  @@unique([userId, songId])
+}
+
+model QueueItem {
+  id        String   @id @default(cuid())
+  songId    String
+  position  Int
+  cycleId   String
+  createdAt DateTime @default(now())
+
+  song      Song     @relation(fields: [songId], references: [id])
+
+  @@index([cycleId, position])
+}
+
+model PlayHistory {
+  id        String   @id @default(cuid())
+  songId    String
+  playedAt  DateTime @default(now())
+  listeners Int      @default(0)
+
+  song      Song     @relation(fields: [songId], references: [id])
+}
+
+model Article {
+  id          String          @id @default(cuid())
+  title       String
+  slug        String          @unique
+  excerpt     String?
+  content     String          @db.Text
+  coverUrl    String?
+  category    ArticleCategory
+  tags        String[]
+  published   Boolean         @default(false)
+  publishedAt DateTime?
+  views       Int             @default(0)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  comments    Comment[]
+}
+
+enum ArticleCategory {
+  ANIME_REVIEW
+  NEWS
+  MUSIC
+  ANALYSIS
+  INTERVIEW
+  LIST
+}
+
+model MangaPick {
+  id            String      @id @default(cuid())
+  title         String
+  author        String
+  coverUrl      String?
+  genre         String[]
+  status        MangaStatus
+  latestChapter Int?
+  synopsis      String
+  externalUrl   String?
+  isFeatured    Boolean     @default(false)
+  staffPick     Boolean     @default(false)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+}
+
+enum MangaStatus {
+  ONGOING
+  COMPLETED
+  HIATUS
+}
+
+model ExclusiveContent {
+  id           String        @id @default(cuid())
+  title        String
+  description  String
+  type         ExclusiveType
+  mediaUrl     String?
+  thumbnailUrl String?
+  duration     Int?
+  isMembersOnly Boolean      @default(true)
+  published    Boolean       @default(false)
+  createdAt    DateTime      @default(now())
+}
+
+enum ExclusiveType {
+  INTERVIEW
+  BEHIND_SCENES
+  STUDIO_TOUR
+  MUSIC_BREAKDOWN
+  LIVE_SESSION
+}
+
+model ChatMessage {
+  id        String   @id @default(cuid())
+  userId    String
+  message   String
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  userId    String
+  articleId String
+  content   String
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id])
+  article   Article  @relation(fields: [articleId], references: [id])
+}
+
+model RadioStats {
+  id        String   @id @default(cuid())
+  timestamp DateTime @default(now())
+  listeners Int
+  cycleId   String
+}
