@@ -20,13 +20,10 @@ const app = express();
 const server = http.createServer(app);
 
 const io = new Server(server, {
-  cors: { origin: process.env.CLIENT_URL || 'http://localhost:3000', methods: ['GET', 'POST'] },
-  app.use(cors({
-  origin: function(origin, callback) {
-    callback(null, true);
+  cors: {
+    origin: '*',
+    methods: ['GET', 'POST'],
   },
-  credentials: true
-}));
 });
 
 let currentCycleId = `cycle_${Date.now()}`;
