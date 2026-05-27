@@ -93,6 +93,7 @@ app.set('cycleId', () => currentCycleId);
 app.use(helmet());
 app.use(cors({ origin: process.env.CLIENT_URL || 'http://localhost:3000' }));
 app.use(express.json());
+app.set('trust proxy', 1);
 app.use('/api/', rateLimit({ windowMs: 15 * 60 * 1000, max: 200 }));
 
 app.use('/api/auth', authRouter);
